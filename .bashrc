@@ -9,5 +9,7 @@ alias ls='ls -hAFG --color=auto'
 PS1="\[\033[01;37m\]\$? \$(if [[ \$? == 0 ]]; then echo \"\[\033[01;32m\]\342\234\223\"; else echo \"\[\033[01;31m\]\342\234\227\"; fi) $(if [[ ${EUID} == 0 ]]; then echo '\[\033[01;31m\]\h'; else echo '\[\033[01;32m\]sup'; fi)\[\033[01;34m\] \wFV \$\[\033[00m\] "
 
 
-
-
+#Webm convertavimas veikia su Ubuntu 14.01
+webconvert(){
+avconv -i $1 -acodec libvorbis -aq 5 -ac 2 -qmax 25 -threads 2 $2.webm 
+}
