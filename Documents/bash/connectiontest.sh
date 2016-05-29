@@ -1,4 +1,6 @@
 #/!bin/bash
+# Author: github.com/rytoj 
+# Tikrina ar nedingo internetas.
 
 IP="8.8.8.8"
 #Time delay in seconds
