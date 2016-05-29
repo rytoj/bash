@@ -16,7 +16,6 @@ do
 		COUNT=0
 		 echo "$(date +%F:%T)" UP >> $LOGFILE
 	else
-		echo "Kazkas netaip"
 		COUNT=$(($COUNT + 1))
 		if [ "$COUNT" -ge "$TEST" ]; then
 			notify-send  "Lost connection: $(($COUNT * $DELAY))s"
