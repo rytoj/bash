@@ -1,4 +1,4 @@
-#/!bin/bash
+#!/bin/bash
 # Author: github.com/rytoj 
 # Tikrina ar nedingo internetas.
 
