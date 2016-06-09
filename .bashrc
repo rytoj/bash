@@ -17,16 +17,16 @@ f() {
 
 
 
-translateToLt() {
+s_translateToLt() {
   firefox -new-tab -url https://translate.google.com/#en/lt/$1
 }
 
-etimologija() {
+s_etimologija() {
 
   firefox -new-tab -url http://etimologija.baltnexus.lt/?w=$1
 }
 
-etymology() {
+s_etymology() {
   firefox -new-tab -url http://etymonline.com/index.php?allowed_in_frame=0\&search=$1
 }
 
@@ -54,7 +54,7 @@ bind -x '"\C-h":man_on_word'
 
 
 #webm convertavimas
-webmconvert(){
+s_webmconvert(){
 if [ "$#" -lt 2 ] || [ "$1" == "-h"  ]; then
   echo "wembconvert source.mp4 result"
   return 1
@@ -62,6 +62,16 @@ else
   avconv -i "$1" -acodec libvorbis -aq 5 -ac 2 -qmax 25 -threads 2 "$2".webm
 fi
 }
+
+#suranda nežinomos programos pavadinimą
+s_findprogramname() {
+ read -p "Turn on unknown program and press 'Enter'"
+ ps x -o cmd > /tmp/capture1.txt
+ read -t 15 -p "Turn off unknown program and press 'Enter'"
+ ps x -o cmd > /tmp/capture2.txt
+ diff /tmp/capture1.txt /tmp/capture2.txt
+}
+
 
 #man with color
 export LESS_TERMCAP_mb=$'\E[01;31m'
