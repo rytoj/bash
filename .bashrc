@@ -72,6 +72,17 @@ s_findprogramname() {
  diff /tmp/capture1.txt /tmp/capture2.txt
 }
 
+#timer
+s_timer(){
+ if [[ "$@" -ne 1 ]]; then
+  echo "usage: $FUNCNAME minutes_to_countdown"
+  return 1
+ fi
+ min=$(($1 * 60))
+ sleep $min && notify-send "Timer" "$1 min. ended." 
+ echo "Timer ended after $1 min."
+}
+
 
 #man with color
 export LESS_TERMCAP_mb=$'\E[01;31m'
