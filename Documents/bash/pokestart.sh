@@ -1,10 +1,7 @@
 #!/bin/bash
-#If script crashes start with next gps location in LOCATIONS
-#startup script for: https://github.com/PokemonGoF/PokemonGo-Bot
-
-LOCATIONS=("54.68597,25.28608" "54.68863,25.29037" "54.68907,25.27124", "54.68469,25.26924", "54.68343,25.29756", "54.68527,25.28870")
+LOCATIONS=("54.68598,25.28608" "54.68864,25.29037" "54.68907,25.27124", "54.68469,25.26924", "54.68343,25.29756", "54.68527,25.28870")
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" #Working directory
-SLEEPTIME=443
+SLEEPTIME=$(( $RANDOM % 100 + 400 )) # sleeptime generates from range 400-499
 FILE="$DIR/pokecli.py"
 CONF="$DIR/config.json"
 
