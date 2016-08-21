@@ -118,6 +118,12 @@ if ! shopt -oq posix; then
 fi
 
 
+# EDITOR and VISUAL determine the editor that programs such as less
+# and mail clients invoke when asked to edit a file.
+EDITOR=nano
+VISUAL=gedit
+
+
 alias S_sort='ls -trlh $1'
 alias py="python3"
 alias mount="mount | column -t"
