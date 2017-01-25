@@ -1,0 +1,223 @@
+#!/bin/bash
+# Program to output a system information page
+
+TITLE="System Information Report for $HOSTNAME"
+TIME=$(date +%F:%T)
+TIMESTAMP="Generated $TIME, by $USER uid: $(id -u)"
+TOTALSPACE=$(df -h)
+SELIUX_STATE=$(sestatus | head -1 ; sestatus | grep --color=auto "Current mode";)
+
+CRONU=$(crontab -l  2>&1) #For current user
+CRONTAB=$(cat /etc/crontab)
+ANACRON=$(cat /etc/anacrontab)
+
+LSOF=$(lsof -i) #Active connections
+
+
+type systemd 2>/dev/null && SERVICES=$(systemctl -t service) || SERVICES=$(chkconfig --list) #for cebos6.8
+OLD_IFS=$IFS #old IFS bakcup
+
+
+usage() {
+  echo "usage: $(basename $0) [OPTION]... [FILE]"
+  echo "-o, --output [file]   generate html file"
+  return
+}
+
+
+
+findfiles() {
+  #this command is in function, because it takes long time to execute
+  echo "Scaning hard for largest files, please wait...."  >&2
+  LARGEST_FILES=$(du -a /home 2>/dev/null | sort -n -r | head -n 10)
+}
+
+findSUID(){
+#finds all SUID files and programs that are world writables
+  mtime="370" #file is modified in less then
+  seachdir="/home" #CHANGE THIS
+  echo "Scaning ${seachdir} for SUID permissions, please wait...."  >&2
+  SUID_FILES=$(find ${seachdir}  -type f -mtime -${mtime} -perm /4000 2>/dev/null)
+
+}
+
+
+# #Checks if root
+# if [ $(id -u) -eq 0 ]; then
+#   echo "You are root">&2
+# else
+#   echo "You are user with uid: $(id -u)">&2
+# fi
+
+report_cached_info() {
+  # func prints system uptime
+  echo "<H3>Identify cached IP or MAC addresses</H3>
+  <PRE>$(arp -a)</PRE>
+  <PRE>$(route)</PRE>"
+  return
+}
+report_access_info() {
+  # func prints system uptime
+  echo "<H5>Last logged in users</H5>
+  <PRE>$(last)</PRE>
+  <H5>Who is logged</H5>
+  <PRE>$(w)</PRE>"
+  return
+}
+
+report_list_open_files() {
+  # func prints cron info
+  echo "<H3> Cron info</H3>
+  <PRE>$LSOF</PRE>"
+  return
+}
+report_cron() {
+  # func prints cron info
+  echo "<H3> Cron info</H3>
+  <PRE>$CRONU</PRE>
+  <H5>Crontab</H5>
+  <PRE>$CRONTAB</PRE>
+  <H5>Anacron</H5>
+  <PRE>$ANACRON</PRE>"
+  return
+}
+
+report_uptime() {
+  # func prints system uptime
+  echo "<H3> System Uptime</H3>
+  <PRE>$(uptime)</PRE>"
+  return
+}
+
+report_selinux() {
+  # func selinux state
+  echo "<H3> SeLinux info</H3>
+  <PRE>$SELIUX_STATE</PRE>"
+  return
+}
+report_services() {
+  # list services
+  echo "<H3> Services info:</H3>
+  <PRE>$SERVICES</PRE>"
+  return
+}
+
+report_freespace(){
+  # func print disk usage
+  echo "<H3>Disk Usage</H3>
+<PRE>
+$TOTALSPACE
+</PRE>"
+  return
+}
+
+report_largests_files(){
+  # func print disk usage
+  echo "<H3>10 Largest's files</H3>
+<PRE>
+$LARGEST_FILES
+</PRE>"
+  return
+}
+
+report_SUID_files(){
+  # func print disk usage
+  echo "<H3>SUID files:</H3>
+<PRE>
+$SUID_FILES
+</PRE>"
+  return
+}
+
+
+
+
+
+user_info(){
+  # func prints user information prom /etc/passwd
+  passw_info=$(grep $(whoami) /etc/passwd)
+  if [ -n $passw_info ]; then
+    IFS=:
+    read user pw uid gid name home shell <<< "$passw_info"
+cat << _EOF_
+<H3>User Info</H3>
+<PRE>
+<b>User</b>= $user
+<b>UID</b>= $uid
+<b>Home</b>= $home
+<b>Shell</b>= $shell
+</PRE>
+_EOF_
+  else
+      echo "No such user">&2
+      exit 1
+  fi
+  reset_IFS
+}
+
+reset_IFS(){
+  IFS=$OLD_IFS
+}
+generate_main_html(){
+  findfiles
+  findSUID
+  # func prints main html page
+  cat << _EOF_
+  <HTML>
+  <HEAD>
+  <TITLE>$TITLE</TITLE>
+  </HEAD>
+  <BODY>
+  <H1>$TITLE</H1>
+  $(user_info)
+  $(report_access_info)
+  $(report_cron)
+  $(report_services)
+  $(report_selinux)
+  $(report_cached_info)
+  $(report_freespace)
+  $(report_list_open_files)
+  $(report_largests_files)
+  $(report_SUID_files)
+  $(report_uptime)
+
+  <P><i>$TIMESTAMP</i></P>
+  </BODY>
+  </HTML>
+_EOF_
+}
+
+
+
+
+if [ -n $1 ]; then
+  case $1 in
+    -h|--help)
+      usage
+      ;;
+    -o|--output)
+      if [ -e $2 ]; then # If file exists
+        echo "file: $2 already exists"
+        echo "Do you want to owerwite? [y/n]"
+        filename=$2
+        read && [[ $REPLY == "y" ]] && generate_main_html > $2 && exit 0  || exit 1 # generates file is there is duplicate
+      fi
+      generate_main_html > $2 #generates html if there is no duplicate file
+      if [ $? -ne 0 ]; then
+          echo "Error, something went wrong">&2
+          exit 1
+        else
+          echo "$2 succesfully generated"
+      fi
+      ;;
+    pattern )
+      ;;
+    pattern )
+      ;;
+    *)
+      echo "Invalid parameter">&2
+      usage>&2
+      exit 1
+      ;;
+  esac
+fi
