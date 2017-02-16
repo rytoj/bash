@@ -3,6 +3,7 @@
 
 if [[ "$#" -ne 2 ]] ; then
     echo "usage: $0 filename user@host:/folder/"
+    echo "usage: $0 filename /tmp/"
     exit 0
 fi
 
@@ -20,8 +21,14 @@ while true; do
 
   if [ "$m1" != "$m2" ] ; then
     echo "$1 file has changed! `date +%F:%T`"
-    echo "Sendinding file to remote mashine..."
-    scp "$1" "$2"
+    echo "Sendinding file.."
+    cmd=$(echo "$2" | grep -o "@")
+    if [[ -z cmd ]]; then
+      cp "$1" "$2"
+    else
+      scp "$1" "$2"
+    fi
+
     m1=$m2
   fi
 done
